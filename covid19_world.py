@@ -3,6 +3,7 @@ import requests
 from collections import Counter
 from setup import logger_setup
 logger = logger_setup(__name__)
+from sheet_editor import SheetEditor
 
 class Covid19_World:
     def __init__(self):
@@ -83,23 +84,38 @@ class Covid19_World:
         return reqions_dicts
 
     def run(self, days):
-        days_since_start = (date.today() - self.starting_day).days
-        if days <= 0 or days > days_since_start:
-            days_of_data = days_since_start + 1
-        else:
-            days_of_data = days + 1
+        days_of_data, days_since_start = self.get_days_of_data(days)
+        todays_row = days_since_start+2
+        print(f'Todays row: {todays_row}')
+        sheet_editor = SheetEditor(self.starting_day)
+
 
         for days_back in range(days_of_data):
             day = date.today() - timedelta(days=days_back)
             try:
                 raw_lines = self.download_data(day)
                 data_dict = self.parse_raw_lines(raw_lines)
-                print(data_dict)
-                logger.info(f'Day {day} done!')
+                # print(data_dict)
+                logger.info(f'Day {day} data!')
             except requests.exceptions.HTTPError as e:
                 logger.info(f'No data to download for {day}')
+            try:
+                sheet_editor.update_row(data_dict, day)
+            except:
+                pass
+
+        # sheet_editor.update_header(data_dict)
+
+
+    def get_days_of_data(self, days):
+        days_since_start = (date.today() - self.starting_day).days
+        if days <= 0 or days > days_since_start:
+            days_of_data = days_since_start + 1
+        else:
+            days_of_data = days + 1
+        return days_of_data, days_since_start
 
 
 if __name__ == '__main__':
     covid = Covid19_World()
-    covid.run(2)
+    covid.run(10)
