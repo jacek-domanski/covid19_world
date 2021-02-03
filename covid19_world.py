@@ -24,7 +24,8 @@ class Covid19_World:
             'Lithuania',
             'Russia',
             'Italy',
-            'Spain']
+            'Spain',
+            'United Kingdom']
         self.keys = ['Confirmed', 'Deaths', 'Recovered', 'Active']
 
         self.starting_day = date(year=2020, month=3, day=4)
@@ -100,7 +101,7 @@ class Covid19_World:
             except requests.exceptions.HTTPError as e:
                 logger.info(f'No data to download for {day}')
             try:
-                sheet_editor.update_row(data_dict, day)
+                sheet_editor.update_row2(data_dict, day)
             except:
                 pass
 
@@ -118,4 +119,4 @@ class Covid19_World:
 
 if __name__ == '__main__':
     covid = Covid19_World()
-    covid.run(10)
+    covid.run(0)

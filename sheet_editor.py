@@ -16,7 +16,7 @@ class SheetEditor:
     def update_cell(self, adr, content):
         while True:
             try:
-                self.sh.update(adr, content)
+                self.sh.update(adr, content, raw=True)
                 return
             except gspread.exceptions.APIError as e:
                 logger.error(e)
@@ -31,13 +31,35 @@ class SheetEditor:
 
         col = 1
         adr = self.coords_to_adr(col, row)
-        self.update_cell(adr, str(day))
+        self.update_cell(adr, date.strftime(day, '%d-%m-%Y'))
 
         for region in data:
             for number in data[region].values():
                 col += 1
                 adr = self.coords_to_adr(col, row)
-                self.update_cell(adr, str(number))
+                self.update_cell(adr, number)
+
+    def update_row2(self, data, day):
+        logger.info(f'Uploading data for {day}')
+        row = (day - self.starting_day).days + 2
+        logger.debug(f'Updating row: {row}')
+        logger.debug(f'Received data: {data}')
+
+        col = 1
+        first_cell = self.coords_to_adr(col, row)
+        content = []
+        content.append(date.strftime(day, '%d-%m-%Y'))
+        #content.append(day)
+
+        for region in data:
+            for number in data[region].values():
+                col += 1
+                content.append(number)
+
+        last_cell = self.coords_to_adr(col, row)
+        range = f'{first_cell}:{last_cell}'
+        logger.info(f'Updating range: {range}')
+        self.update_cell(range, [content])
 
     def update_header(self, data):
         if not data:
